@@ -10,6 +10,10 @@
 # - Window 4 splits horizontally: left pane runs `btop`, right pane runs
 #   `caffeinate -d` (prevents display sleep, runs in foreground).
 
+# --- Debug log (helps diagnose autostart issues) ---
+exec >>"$HOME/.config/tmux/bootstrap.log" 2>&1
+echo "[$(date '+%F %T')] bootstrap.sh started user=$(id -un) PATH=$PATH"
+
 # --- TPM self-install (plugins are NOT tracked in git) ---
 # Clone TPM if missing, then install any missing plugins. install_plugins is
 # idempotent (skips already-installed) and needs tmux installed but not running.
