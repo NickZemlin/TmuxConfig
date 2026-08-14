@@ -10,6 +10,15 @@
 # - Window 4 splits horizontally: left pane runs `btop`, right pane runs
 #   `caffeinate -d` (prevents display sleep, runs in foreground).
 
+# --- TPM self-install (plugins are NOT tracked in git) ---
+# Clone TPM if missing, then install any missing plugins. install_plugins is
+# idempotent (skips already-installed) and needs tmux installed but not running.
+TPM_DIR="$HOME/.config/tmux/plugins/tpm"
+if [ ! -f "$TPM_DIR/tpm" ]; then
+    git clone --depth 1 https://github.com/tmux-plugins/tpm "$TPM_DIR"
+fi
+"$TPM_DIR/bin/install_plugins" >/dev/null 2>&1 || true
+
 # Already exists -> nothing to do.
 if tmux has-session -t main 2>/dev/null; then
     exit 0
@@ -39,8 +48,11 @@ tmux new-window        -t main: -n 'Btop+Caffeinate'
 tmux split-window -h -t main:'Btop+Caffeinate'
 # pane 1 (left)  -> btop
 # pane 2 (right) -> caffeinate -d
-tmux send-keys -t main:'Btop+Caffeinate'.1 'btop'          C-m
-tmux send-keys -t main:'Btop+Caffeinate'.2 'caffeinate -d' C-m
+tmux send-keys -t main:'Btop+Caffeinate'.1 'btop' C-m
+# `caffeinate` is macOS-only; skip the right pane on Linux.
+if command -v caffeinate >/dev/null 2>&1; then
+    tmux send-keys -t main:'Btop+Caffeinate'.2 'caffeinate -d' C-m
+fi
 
 # Start on the Primary window.
 tmux select-window -t main:Primary
